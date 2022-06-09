@@ -1,8 +1,11 @@
 package com.example.a11st;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,9 +25,12 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     EditText requestText;
-    TextView responseText;
+
 
     static RequestQueue requestQueue;
+
+    RecyclerView recyclerView;
+    MovieAdapter movieAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         requestText = findViewById(R.id.requestText);
-        responseText=findViewById(R.id.responseText);
+
 
         Button requestBtn = findViewById(R.id.requestBtn);
         requestBtn.setOnClickListener(new View.OnClickListener() {
@@ -45,6 +51,13 @@ public class MainActivity extends AppCompatActivity {
         if(requestQueue==null){
             requestQueue= Volley.newRequestQueue(getApplicationContext());
         }
+        recyclerView=findViewById(R.id.recyclerView);
+        LinearLayoutManager layoutManager = new LinearLayoutManager
+                (this,LinearLayoutManager.VERTICAL,false);
+        recyclerView.setLayoutManager(layoutManager);
+
+        movieAdapter =new MovieAdapter();
+        recyclerView.setAdapter(movieAdapter);
 
     }
 
@@ -79,11 +92,17 @@ public class MainActivity extends AppCompatActivity {
         println("요청 보냄");
     }
     public void println(String data){
-        responseText.append(data + "\n");
+        Log.d("MainActivity",data);
     }
     public void processResponse(String response){
         Gson gson =new Gson();
         MovieList movieList = gson.fromJson(response,MovieList.class);
         println("영화 정보의 수: "+ movieList.boxOfficeResult.dailyBoxOfficeList.size());
+
+        for(int i=0; i< movieList.boxOfficeResult.dailyBoxOfficeList.size();i++){
+            Movie movie = movieList.boxOfficeResult.dailyBoxOfficeList.get(i);
+            movieAdapter.addItem(movie);
+        }
+        movieAdapter.notifyDataSetChanged();
     }
 }
